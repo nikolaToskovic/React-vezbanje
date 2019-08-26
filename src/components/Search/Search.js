@@ -8,11 +8,11 @@ class Search extends Component {
 	}
 
 	componentDidUpdate(prevProps, prevState) {
-		if(!prevProps.data.length) {
-			this.setState({
-				data: this.props.data
-			})
-		}
+		// if(!prevProps.data.length) {
+		// 	this.setState({
+		// 		data: this.props.data
+		// 	})
+		// }
 
 		if(prevState.searchValue !== this.state.searchValue) {
 			this.filterData();

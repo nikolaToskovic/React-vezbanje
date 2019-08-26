@@ -2,45 +2,50 @@ import React, {Component, Fragment} from 'react';
 import './App.css';
 
 import uuid from 'react-uuid';
-import data from './data/data.json';
 
 import {Cards} from './components/Cards/Cards';
 import {Header} from './components/Header/Header'; 
+import {Form} from './components/Form/Form';
 
 class App extends Component {
 
   state = {
       showCards: true,
-      data: []
+      data: [],
+      formOpened: false
   }
 
   componentDidMount() {
-    this.setData();
+    this.setData()
   }
 
   setData = () => {
+    fetch (`https://cubs-245413.firebaseio.com/people.json`)
+      .then (response => {
+        return response.json()
+      })
+      .then (response => {
+          const persons = [];
 
-    const loadedData = [...data];
+          for(let person in response) {
+            response[person].id = person;
+            persons.push(response[person]);
+          } 
 
-    loadedData.forEach(item => {
-      item.id = uuid();
-    })
-    console.log(loadedData)
+          this.setState({
+            data: persons
+          })
+      })
 
-    this.setState({
-      data: loadedData
-    })
+    
   }
 
   onCardRemove = (id) => {
-    let newData = [...this.state.data];
-
-    newData = newData.filter(item => {
-      return item.id !== id
-    });
-
-    this.setState({
-      data: newData
+    fetch (`https://cubs-245413.firebaseio.com/people/${id}.json`, {
+      method: "DELETE"
+    })
+    .then(response => {
+      this.setData()
     })
   }
 
@@ -48,8 +53,6 @@ class App extends Component {
     let newData = [...this.state.data];
     let duplicatedCard = {...newData.find(item => item.id === id)};
     const duplicatedCardIndex = newData.findIndex(item => item.id === id);
-
-    console.log(duplicatedCardIndex)
 
     duplicatedCard.id = uuid();
     duplicatedCard.name += "_copy";
@@ -62,14 +65,36 @@ class App extends Component {
 
   }
 
+  onFormOpen = () => {
+    this.setState({
+      formOpened: true
+    })
+  }
+
+  onFormClose = () => {
+    this.setState({
+      formOpened: false
+    })
+  }
+
   renderCards = () => {
 
-    const {searchedData, data, showCards} = this.state;
+    const {searchedData, data} = this.state;
     const displayData = searchedData || data;
 
-    return showCards && data.length ? <Cards data={displayData} 
-                                             duplicateCard={(id) => this.onCardDuplicate(id)}
-                                             removeCard={(id) => this.onCardRemove(id)}/> : null;
+    return this.state.showCards 
+                                                ? <Cards data={displayData} 
+                                                        duplicateCard={(id) => this.onCardDuplicate(id)} 
+                                                        removeCard={(id) => this.onCardRemove(id)} 
+                                                        openForm={this.onFormOpen} /> 
+                                                : null; 
+  }
+
+  renderForm = () => {
+    if (this.state.formOpened) {
+      return <Form closeForm={this.onFormClose}
+                   createCard={data => this.onCardCreate(data)} />
+    }
   }
 
   onCardSearch = (data) => {
@@ -78,15 +103,34 @@ class App extends Component {
     })
   }
 
+  onCardCreate = (item) => {
+
+    fetch(`https://cubs-245413.firebaseio.com/people.json`, {
+      method: "POST",
+      body: JSON.stringify(item)
+    })
+    .then(response => {
+      this.setData();
+    })
+
+    this.setState({
+      formOpened: false
+    })
+  }
+
   render () {
+    const {data} = this.state;
+
+
     return (
       <Fragment>
         <Header className="full-width" 
-                data={this.state.data}
+                data={data}
                 onSearch={(data) => this.onCardSearch(data) }
                 />
         <div className="main-content" onClick={this.update}>
              {this.renderCards()}
+             {this.renderForm()}
         </div>
       </Fragment>
     );
