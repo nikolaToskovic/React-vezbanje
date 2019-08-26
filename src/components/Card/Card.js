@@ -1,6 +1,6 @@
 import React from 'react';
 import './Card.css';
-
+import {Link} from 'react-router-dom';
 import {Button} from '../Button/Button';
 
 const Card = (props) => {
@@ -22,6 +22,7 @@ const Card = (props) => {
 		       				onButtonClick={() => props.duplicateCard(props.item.id)}>Duplicate card
 		       		</Button>
 		       </div>
+		       <Link to={`cards/${props.item.id}`}>More details</Link>
 		</div>
 	)
 }

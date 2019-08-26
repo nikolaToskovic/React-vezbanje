@@ -47,7 +47,6 @@ class Form extends Component {
 						<option value="female">Female</option>
 					</select>
 					<div className="form-buttons">
-						<Button type="red" onButtonClick={this.props.closeForm}>Cancel</Button>
 						<Button onButtonClick={this.createCard}>Submit</Button>
 					</div> 
 				</div>
